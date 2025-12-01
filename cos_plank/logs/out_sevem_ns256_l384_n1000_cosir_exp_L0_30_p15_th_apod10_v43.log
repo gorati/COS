@@ -1,0 +1,27 @@
+Loaded map: NSIDE_in=2048, ORDERING=RING, NPIX=50331648
+Using NSIDE=256 (pixel degrade).
+Using LMAX=384
+Harmonic backend OK? True
+Mask loaded; masked fraction=0.016
+Observed statistics:
+     hemi_asym = 0.0338783
+   parity_lowL = 0.108065
+           S12 = 4.27083e-24
+      QO_align = 0.892986
+     ring_scan = 0.000154565
+COS-IR(exp): L0=30, p=1.5  ⇒ Gamma[0]=1.000, Gamma[L0]=0.368
+Running 1000 surrogate skies under 'cosir' model (mask matched, reduced=False)...
+Nominal (uncorrected) p-values:
+     hemi_asym : p = 0.000999
+   parity_lowL : p = 0.4356
+           S12 : p = 0.8781
+      QO_align : p = 0.1189
+     ring_scan : p = 0.000999
+FDR(BH) alpha=0.05 threshold=0.02
+FDR(BY) alpha=0.05 threshold=0.008759
+Holm-FWER alpha=0.05 rejections: 2/5
+
+========================================================================
+VÉGSŐ VERDIKT:
+TÁMOGATÓ EREDMÉNY: 2 teszt (hemi_asym, ring_scan) BH-FDR után is szignifikáns a COS-IR referenciahoz képest.
+========================================================================

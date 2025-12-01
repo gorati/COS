@@ -1,0 +1,1 @@
+TÁMOGATÓ EREDMÉNY: 2 teszt (hemi_asym, ring_scan) BH-FDR után is szignifikáns a COS-IR referenciahoz képest.

@@ -1,0 +1,208 @@
+{
+  "avg_delta_mi": [
+    0.17793526997946352,
+    0.22333355011850914,
+    0.20860241466897328,
+    0.1995689829714396,
+    0.07808122128036282,
+    0.11487726675015206,
+    0.08198524521920077,
+    0.059517918350157635,
+    0.049195950484309754
+  ],
+  "bayes_models": {
+    "bayes_factors": {
+      "delta_logZ_linear_negative_minus_const": 4.794876277591932,
+      "delta_logZ_linear_symmetric_minus_const": 4.121414674917233,
+      "delta_logZ_quadratic_minus_const": 1.033813238401585,
+      "jeffreys_strength_linear_negative_over_const": "Decisive",
+      "jeffreys_strength_linear_symmetric_over_const": "Strong",
+      "jeffreys_strength_quadratic_over_const": "Not worth mentioning",
+      "log10_B_linear_negative_over_const": 2.0823883087669808,
+      "log10_B_linear_symmetric_over_const": 1.7899076509516385,
+      "log10_B_quadratic_over_const": 0.4489793847563393
+    },
+    "const": {
+      "logZ": 8.218926710512143,
+      "logZerr": 0.11084934057683074,
+      "param_means": [
+        0.11553373828472156,
+        -1.2618304735428525
+      ],
+      "param_stds": [
+        0.022464481859751702,
+        0.13700892080778784
+      ]
+    },
+    "linear_negative": {
+      "logZ": 13.013802988104075,
+      "logZerr": 0.13685826758522707,
+      "param_means": [
+        0.1995213457103812,
+        -0.019373825794395765,
+        -2.236218379813539
+      ],
+      "param_stds": [
+        0.02656455954529233,
+        0.004429097401035878,
+        0.7531137536621935
+      ]
+    },
+    "linear_symmetric": {
+      "logZ": 12.340341385429376,
+      "logZerr": 0.1458701897334218,
+      "param_means": [
+        0.20040252864372304,
+        -0.019487089230418378,
+        -2.1559585304427893
+      ],
+      "param_stds": [
+        0.026496216057347182,
+        0.00445532203968291,
+        0.7037120317486432
+      ]
+    },
+    "quadratic": {
+      "logZ": 9.252739948913728,
+      "logZerr": 0.17531741805830317,
+      "param_means": [
+        0.21327399528581922,
+        -0.024912891549526625,
+        0.0005078869878664699,
+        -2.113585315441144
+      ],
+      "param_stds": [
+        0.03911583474648802,
+        0.01709943769183042,
+        0.0018085460631867202,
+        0.7329178669303408
+      ]
+    }
+  },
+  "global_monotonicity_stats": {
+    "measured_mean_mono": -0.8270709861148051,
+    "mu_h0": -0.5536968855109137,
+    "p_value_one_sided": 0.09476247492956102,
+    "sigma": 1.3119857286545682,
+    "std_h0": 0.20836667246695928
+  },
+  "hierarchical_linear": {
+    "logZ": 394.17741685656523,
+    "logZerr": 4.3245001091594855,
+    "note": "The hierarchical model uses a different likelihood definition (all files x scales), so its logZ is not directly comparable to the logZ values of the simpler models above.",
+    "param_means": [
+      0.21812827516004926,
+      -0.020608925608570545,
+      -1.39776339301654,
+      -1.8718178297390407,
+      -0.011364815909518756,
+      -0.00781894974468769,
+      -0.003985711782574222,
+      0.01645415202411746,
+      2.7700531658383336e-05,
+      0.0038754804373683583,
+      -0.00220789472796754,
+      -0.02254083167943561,
+      -0.011163599923942932,
+      -0.0033954546900439517,
+      0.002769407637271268,
+      0.004782819085300846,
+      -0.060929464986523504,
+      -0.003050826435849145,
+      -0.05125111157860884,
+      -0.0017824676174755124,
+      -0.030599490552132635,
+      -0.008232459825264155,
+      -0.0045622966205252375,
+      0.00658158795572142,
+      0.00976042088785228,
+      0.01690036444383756,
+      0.020316711041619695,
+      0.003854810381086094,
+      -0.011319894420320354,
+      0.013452726318952547
+    ],
+    "param_stds": [
+      0.0012732117614226595,
+      0.0003475553422143816,
+      0.004786438908611023,
+      0.04693725665664932,
+      0.0019145831551152831,
+      0.0048521589491464226,
+      0.004011254539622919,
+      0.001857154819284489,
+      0.0018880309226051387,
+      0.003228035688964096,
+      0.001549395007186235,
+      0.004400921173375159,
+      0.0031359608360416115,
+      0.0050623765234794555,
+      0.001613193387646562,
+      0.0018594064878230316,
+      0.0075947423723342665,
+      0.004162946028693303,
+      0.0024013513166775175,
+      0.004212807558714694,
+      0.0033479828910007894,
+      0.0024538222874681444,
+      0.0023706180353743654,
+      0.0023084571858837913,
+      0.0033031743732237313,
+      0.003473644133801569,
+      0.003957831022314477,
+      0.0016014217266805656,
+      0.0025873199571380887,
+      0.0021734586860173233
+    ]
+  },
+  "input_files": [
+    "cmb_time_arrow_MI_commander_nside256_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_commander_nside256_axes1000_seed54321.json",
+    "cmb_time_arrow_MI_commander_nside256_axes1000_seed98765.json",
+    "cmb_time_arrow_MI_nilc_nside256_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_nilc_nside256_axes1000_seed54321.json",
+    "cmb_time_arrow_MI_nilc_nside256_axes1000_seed98765.json",
+    "cmb_time_arrow_MI_sevem_nside256_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_sevem_nside256_axes1000_seed54321.json",
+    "cmb_time_arrow_MI_sevem_nside256_axes1000_seed98765.json",
+    "cmb_time_arrow_MI_smica_nside128_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside128_axes1000_seed98765.json",
+    "cmb_time_arrow_MI_smica_nside256_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside256_axes1000_seed12345_axis227-27.json",
+    "cmb_time_arrow_MI_smica_nside256_axes1000_seed54321.json",
+    "cmb_time_arrow_MI_smica_nside256_axes1000_seed54321_axis227-27.json",
+    "cmb_time_arrow_MI_smica_nside256_axes1000_seed98765.json",
+    "cmb_time_arrow_MI_smica_nside256_axes1000_seed98765_axis227-27.json",
+    "cmb_time_arrow_MI_smica_nside256_ent32_mi16_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside256_ent32_mi32_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside256_ent32_mi48_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside256_ent64_mi16_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside256_ent64_mi32_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside256_ent64_mi48_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside256_ent96_mi16_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside256_ent96_mi32_axes1000_seed12345.json",
+    "cmb_time_arrow_MI_smica_nside256_ent96_mi48_axes1000_seed12345.json"
+  ],
+  "lmax_grid": [
+    16,
+    24,
+    32,
+    48,
+    64,
+    96,
+    128,
+    192,
+    256
+  ],
+  "std_delta_mi": [
+    0.0506725061195209,
+    0.05601939259466247,
+    0.055748463078505145,
+    0.03140751069377765,
+    0.013853138673288141,
+    0.010362304595406983,
+    0.01219878794750628,
+    0.008596878498802868,
+    0.006149475409854469
+  ]
+}

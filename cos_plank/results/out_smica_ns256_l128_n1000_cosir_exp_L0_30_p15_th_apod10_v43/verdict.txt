@@ -1,0 +1,1 @@
+TÁMOGATÓ EREDMÉNY: 1 teszt (ring_scan) BH-FDR után is szignifikáns a COS-IR referenciahoz képest.

@@ -1,0 +1,72 @@
+{
+  "version": "4.4.0",
+  "map": "/mnt/d/Projects/COM_CMB_IQU-smica_2048_R3.00_full.fits",
+  "mask": "/mnt/d/Projects/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits",
+  "out": "out_smica_ns256_l128_n1000_cosir_exp_L0_30_p15_th_apod10_v43",
+  "nside_in": 2048,
+  "nside": 256,
+  "lmax": 128,
+  "mask_used": true,
+  "fwhm_arcmin": 0.0,
+  "nsims": 1000,
+  "seed": 1234,
+  "threads": 5,
+  "match_seeds_across_alts": true,
+  "alt_model": "cosir",
+  "dipA": null,
+  "dip_axis": null,
+  "dip_coords": null,
+  "ir_kind": "exp",
+  "ir_L0": 30,
+  "ir_eps": 0.2,
+  "ir_gamma": 1.0,
+  "ir_p": 1.5,
+  "sdip_L0": null,
+  "sdip_A0": null,
+  "sdip_shape": null,
+  "sdip_axis": null,
+  "sdip_coords": null,
+  "pf_type": null,
+  "pf_L0": null,
+  "pf_amp": null,
+  "pf_tilt": null,
+  "stats": {
+    "hemi_asym": 0.03492058558421793,
+    "ring_scan": 5.993505888537855e-05,
+    "parity_lowL": 0.16120076404813616,
+    "S12": 4.4696695810959584e-24,
+    "QO_align": 0.7606102744258334
+  },
+  "pvals": {
+    "hemi_asym": 0.37362637362637363,
+    "parity_lowL": 0.4355644355644356,
+    "S12": 0.8671328671328671,
+    "QO_align": 0.2547452547452547,
+    "ring_scan": 0.000999000999000999
+  },
+  "provenance": {
+    "backend": "ducc0.sht",
+    "hemi_asym": "variance difference on hemispheres with hemisphere-specific means (mask-weighted)",
+    "parity_lowL": "|∑_{ℓ=2..40} (-1)^ℓ (2ℓ+1) C_ℓ| / ∑_{ℓ=2..40} (2ℓ+1) C_ℓ (harmonic)",
+    "S12": "∫ C(θ)^2 dcosθ, θ≥60° (monopole/dipole removed; harmonic)",
+    "QO_align": "principal-axis inertia(|T|) proxy (ℓ=2,3; harmonic)",
+    "ring_scan": "weighted annulus-mean contrast (real-space)",
+    "cl_source": "observed_pseudo",
+    "mask_apod": "gaussian_10.00arcmin",
+    "ir_kind": "exp",
+    "ir_params": {
+      "L0": 30,
+      "p": 1.5,
+      "eps": 0.2,
+      "gamma": 1.0
+    }
+  },
+  "versions": {
+    "python": "3.11.14",
+    "numpy": "2.3.4",
+    "astropy": "7.1.1",
+    "ducc0": "0.39.1",
+    "healpy": "1.18.1"
+  },
+  "notes": "If backend='none', harmonic stats are NA; MC uses same mask/processing for comparability."
+}

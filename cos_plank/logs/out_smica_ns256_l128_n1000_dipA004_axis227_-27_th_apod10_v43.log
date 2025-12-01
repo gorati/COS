@@ -1,0 +1,27 @@
+Loaded map: NSIDE_in=2048, ORDERING=RING, NPIX=50331648
+Using NSIDE=256 (pixel degrade).
+Using LMAX=128
+Harmonic backend OK? True
+Mask loaded; masked fraction=0.001
+Observed statistics:
+     hemi_asym = 0.0349206
+   parity_lowL = 0.161201
+           S12 = 4.46967e-24
+      QO_align = 0.76061
+     ring_scan = 5.99351e-05
+Dipole modulation: A=0.04, axis (theta,phi)=(117.00°, 227.00°)
+Running 1000 surrogate skies under 'dipole' model (mask matched, reduced=False)...
+Nominal (uncorrected) p-values:
+     hemi_asym : p = 0.974
+   parity_lowL : p = 0.4356
+           S12 : p = 0.8791
+      QO_align : p = 0.2188
+     ring_scan : p = 0.000999
+FDR(BH) alpha=0.05 threshold=0.01
+FDR(BY) alpha=0.05 threshold=0.00438
+Holm-FWER alpha=0.05 rejections: 1/5
+
+========================================================================
+VÉGSŐ VERDIKT:
+TÁMOGATÓ EREDMÉNY: 1 teszt (ring_scan) BH-FDR után is szignifikáns a dipólus-modulált referenciahoz képest.
+========================================================================
