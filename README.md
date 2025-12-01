@@ -125,28 +125,46 @@ as long as the listed dependencies are installed.
 ## Data
 
 The COS pipelines rely on **public cosmological data sets**, which are not
-bundled with this repository for reasons of size and licensing. Instead,
-please obtain them directly from their official archives, for example:
+bundled with this repository for reasons of size and licensing. Users should
+download the required maps and masks directly from the official archives.
 
-- Planck 2018 CMB maps and masks (SMICA, NILC, SEVEM, Commander, common
-  masks) – Planck Legacy Archive / ESA archive (insert official link here).
+### Planck 2018 CMB maps and masks (Release 3)
 
-- Large-scale structure / DESI data products – DESI data release (insert
-  official link here).
+For the CMB-related COS-Planck and CMB time–arrow analyses, the scripts expect
+Planck 2018 (Release 3) component-separation maps and the common CMB mask.
+In particular, the reference runs in the COS papers use:
 
-- Stochastic gravitational-wave background (SGWB) and strain data –
-  LIGO/Virgo/KAGRA open data archives (insert official link here).
+- SMICA IQU CMB map  
+  https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/component-maps/cmb/COM_CMB_IQU-smica_2048_R3.00_full.fits
 
-The COS-NUM and COS-EXP papers, together with their appendices and
-supplementary materials, specify:
+- NILC IQU CMB map  
+  https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/component-maps/cmb/COM_CMB_IQU-nilc_2048_R3.00_full.fits
 
-- which exact maps and masks were used (file names, Nside, smoothing, etc.),
-- which survey releases and cuts were applied,
-- what random seed conventions and numerical parameters were adopted.
+- SEVEM IQU CMB map  
+  https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/component-maps/cmb/COM_CMB_IQU-sevem_2048_R3.00_full.fits
 
-The JSON/NPY summary files and configuration examples in this repository are
-intended to be sufficient to reproduce the **published figures and tables**
-once the required public data sets have been downloaded.
+- Commander IQU CMB map  
+  https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/component-maps/cmb/COM_CMB_IQU-commander_2048_R3.00_full.fits
+
+- Common CMB mask (INT, Nside=2048)  
+  https://irsa.ipac.caltech.edu/data/Planck/release_3/ancillary-data/masks/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits
+
+The COS-NUM and COS-EXP papers (and their appendices) specify which of these
+maps and masks are used in each figure or table, together with the Nside,
+smoothing, and masking conventions.
+
+### Other data sets
+
+The repository is also designed to be used with other public cosmological data,
+for example:
+
+- Large-scale structure / DESI data products (DESI public data releases).
+- Stochastic gravitational-wave background (SGWB) and strain data from
+  LIGO/Virgo/KAGRA open data archives.
+
+Exact survey releases, catalogue cuts, and additional file paths should be
+configured by the user according to the examples in the scripts and the
+descriptions in the COS-NUM and COS-EXP papers.
 
 ---
 
