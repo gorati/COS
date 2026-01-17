@@ -11,10 +11,29 @@ The main goals of this repository are:
 - to document how the **CMB time-arrow**, **SGWB**, and **LSS/DESI** tests are
   actually computed in practice,
 - to make it possible to **reproduce the figures and tables** in the COS-NUM
-  and COS-EXP articles, given access to the corresponding public survey data.
+  and COS-EXP articles, given access to the corresponding public survey data,
+- to enforce **COS-STAB auditability** via schema-checked `metrics.jsonl` +
+  `run_meta.json` logs and an offline validator.
 
 The repository is designed to remain flexible: over time, new scripts and
 modules may be added as the COS program evolves.
+
+---
+
+## COS-STAB auditability (metrics.jsonl contract)
+
+The folder `cos_stab/` contains the **COS-STAB audit layer** used by COS-NUM
+to make numerical runs externally auditable. It provides a schema-enforcing
+logger (`metrics.jsonl` + `run_meta.json`), an offline validator, and a combined
+reference runner.
+
+Quick start (audit demo):
+
+- `cd cos_stab`
+- `python cos_core_sim_combined.py --steps 1000 --seed 2025 --lambda-geom 1.0 --output metrics.jsonl --run-meta run_meta.json`
+- `python validate_metrics.py metrics.jsonl --schema extended --strict`
+
+These artifacts and commands correspond to COS-NUM Appendix D.10.
 
 ---
 
@@ -22,6 +41,9 @@ modules may be added as the COS program evolves.
 
 The exact layout may change as the project is cleaned up and refactored, but
 typical core scripts include:
+
+- `cos_stab/` – COS-STAB audit logger + validator + combined reference runner
+  (metrics.jsonl contract for COS-NUM).
 
 - `cos_planck_v4_4_0.py` – COS-Planck analysis pipeline. Handles Planck 2018
   CMB maps and masks, Monte Carlo ensembles, HEALPix backends (`healpy`,
@@ -180,6 +202,8 @@ To support scientific reproducibility, the COS code follows these principles:
 - The COS-EXP and COS-NUM papers cite this repository (and, where applicable,
   a Zenodo DOI snapshot). Future updates, bugfixes and refactorings are
   recorded via git history and/or a changelog.
+- COS-STAB auditability is tracked via release tags/commit hashes; the COS-NUM
+  paper cites immutable code snapshots.
 
 If you use this code in your own work, please cite the relevant COS papers
 and, if appropriate, the archived DOI of this repository.
