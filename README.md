@@ -45,6 +45,13 @@ typical core scripts include:
 - `cos_stab/` – COS-STAB audit logger + validator + combined reference runner
   (metrics.jsonl contract for COS-NUM).
 
+- `cos_cns/` – reproducible numerics for the COS-CNS paper (operational
+  causality, no-signaling, strict causal cone, and scheduling diagnostics on
+  discrete quantum graph dynamics). Produces COS-NUM/COS-STAB–style run
+  artifacts under `runs/<run_id>/...` and publication figures under `figs/`.
+  See `cos_cns/README.md` for exact run commands, run IDs, and the mapping
+  from scripts to paper figures.
+
 - `cos_planck_v4_4_0.py` – COS-Planck analysis pipeline. Handles Planck 2018
   CMB maps and masks, Monte Carlo ensembles, HEALPix backends (`healpy`,
   `ducc0`), and COS-specific statistics.
@@ -128,7 +135,7 @@ Alternatively, you can use a conda-style environment with **micromamba**:
 
    - `export MAMBA_ROOT_PREFIX="$HOME/micromamba"`
    - `./bin/micromamba shell init -s bash`
-   - `exec bash`   (restart the shell so that \`micromamba\` is available)
+   - `exec bash`   (restart the shell so that `micromamba` is available)
 
 3. Create and activate a `cmb` environment:
 
