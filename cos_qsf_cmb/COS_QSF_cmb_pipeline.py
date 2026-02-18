@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-COS–QSF CMB modulation pipeline
+COS–QSF CMB modulation pipeline (publication version)
 
 This script generates the PDF figures referenced in Appendix F and saves an
 `arrays.npz` bundle for reproducible re-plotting.
@@ -343,8 +343,6 @@ def white_noise_map_uKarcmin(nside: int, sigma_uKarcmin: float, rng: np.random.G
 class Config:
     nside: int = 256
     lmax: int = 767
-    effective_lmax: Optional[int] = None
-    leff_factor: float = 2.5
     seed: int = 42
     outdir: str = "outputs"
     baseline_csv: Optional[str] = None
@@ -379,10 +377,6 @@ def run(cfg: Config) -> None:
     if lmax > 3 * nside - 1:
         lmax = 3 * nside - 1
         print(f"[info] lmax clipped to 3*nside-1 = {lmax}")
-
-    lmax_eval = int(cfg.effective_lmax) if cfg.effective_lmax is not None else int(min(lmax, math.floor(cfg.leff_factor * nside)))
-    if lmax_eval < lmax:
-        print(f"[info] Using effective_lmax={lmax_eval} for validation/binning/plots (pixel-scale safe)")
 
     ell = np.arange(lmax + 1, dtype=float)
 
@@ -428,7 +422,6 @@ def run(cfg: Config) -> None:
     plt.figure()
     plt.plot(ell, M)
     plt.xlabel(r"$\ell$")
-    plt.xlim(2, lmax_eval)
     plt.ylabel(r"$\mathcal{M}_\ell$")
     plt.title("QSF modulation")
     plot_pdf(outdir / "COS_QSF_modulation.pdf")
@@ -440,7 +433,6 @@ def run(cfg: Config) -> None:
     plt.loglog(ell[2:], Cl_base[2:], label="baseline")
     plt.loglog(ell[2:], Cl_mod[2:],  label="modulated")
     plt.xlabel(r"$\ell$")
-    plt.xlim(2, lmax_eval)
     plt.ylabel(r"$C_\ell$")
     plt.legend()
     plt.title("Input spectra")
@@ -484,7 +476,6 @@ def run(cfg: Config) -> None:
     plt.loglog(ell[2:], Cl_mod_for_compare[2:], label=r"reference: $C_\ell^{mod}(B_\ell P_\ell)^2 + N_\ell$")
     plt.loglog(ell[2:], cl_rec_single[2:], label=r"recovered from map")
     plt.xlabel(r"$\ell$")
-    plt.xlim(2, lmax_eval)
     plt.ylabel(r"$C_\ell$")
     plt.legend()
     plt.title("Recovered vs reference (single realization)")
@@ -515,17 +506,14 @@ def run(cfg: Config) -> None:
     rel_mean = rel_diffs.mean(axis=0)
     rel_sem  = rel_diffs.std(axis=0, ddof=1) / math.sqrt(max(1, cfg.nreal))
 
-    edges = weighted_bin_edges(cfg.bin_lmin, lmax_eval, cfg.nbins)
+    edges = weighted_bin_edges(cfg.bin_lmin, lmax, cfg.nbins)
     bin_c, bin_mean = binned_weighted_mean(ell, rel_mean, edges)
     _,     bin_sem  = binned_weighted_mean(ell, rel_sem,  edges)
 
-    mask_bin = bin_c <= lmax_eval
     plt.figure()
-    plt.errorbar(bin_c[mask_bin], bin_mean[mask_bin], yerr=bin_sem[mask_bin], fmt="o", capsize=3)
+    plt.errorbar(bin_c, bin_mean, yerr=bin_sem, fmt="o", capsize=3)
     plt.axhline(0.0, linestyle="--", linewidth=1)
-    plt.ylim(-0.05, 0.05)
     plt.xlabel(r"binned $\ell$")
-    plt.xlim(cfg.bin_lmin, lmax_eval)
     plt.ylabel(r"$\langle \hat C_\ell / C_\ell^{ref} - 1 \rangle$")
     plt.title(f"Binned relative difference (nreal={cfg.nreal})")
     plot_pdf(outdir / "COS_QSF_recovered_input_binned.pdf")
@@ -534,7 +522,7 @@ def run(cfg: Config) -> None:
     # Save arrays bundle
     # -----------------
     params = asdict(cfg)
-    params["effective_lmax"] = int(lmax_eval)
+    params["effective_lmax"] = int(lmax)
     params["N_ell_white"] = float(N_ell_white)
 
     np.savez(
@@ -563,11 +551,6 @@ def build_argparser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="COS–QSF CMB modulation pipeline (publication version).")
     p.add_argument("--nside", type=int, default=256)
     p.add_argument("--lmax", type=int, default=767)
-    p.add_argument("--effective_lmax", type=int, default=None,
-                   help="Maximum multipole used for validation/binning/plots. "
-                        "If omitted, uses min(lmax, floor(leff_factor*nside)).")
-    p.add_argument("--leff_factor", type=float, default=2.5,
-                   help="Factor for effective_lmax = floor(leff_factor*nside) when effective_lmax is not set.")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--outdir", type=str, default="outputs")
 
@@ -606,8 +589,6 @@ def main() -> None:
     cfg = Config(
         nside=args.nside,
         lmax=args.lmax,
-        effective_lmax=args.effective_lmax,
-        leff_factor=args.leff_factor,
         seed=args.seed,
         outdir=args.outdir,
         baseline_csv=args.baseline_csv,
