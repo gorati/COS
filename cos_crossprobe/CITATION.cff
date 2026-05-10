@@ -3,7 +3,7 @@ title: "COS Cross-Probe Time-Arrow Pipeline"
 authors:
   - family-names: "Görhöny"
     given-names: "Attila"
-repository-code: "https://github.com/gorati/COS/cos-crossprobe"
+repository-code: "https://github.com/gorati/COS/cos_crossprobe"
 date-released: "2026-05-10"
 license: "MIT"
 message: "If you use this pipeline, cite the associated COS preprint/repository and the underlying Pantheon+/Planck data products."
