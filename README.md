@@ -8,10 +8,12 @@ exploratory scripts and utilities.
 The main goals of this repository are:
 
 - to provide **reference implementations** of the key COS analysis pipelines,
-- to document how the **CMB time-arrow**, **SGWB**, and **LSS/DESI** tests are
-  actually computed in practice,
+- to document how the **CMB time-arrow**, **SGWB**, **LSS/DESI**, and
+  **Pantheon+--CMB cross-probe** tests are actually computed in practice,
 - to make it possible to **reproduce the figures and tables** in the COS-NUM
   and COS-EXP articles, given access to the corresponding public survey data,
+- to document falsification-oriented and null-compatible stress tests alongside
+  positive or forecast-oriented COS analyses,
 - to enforce **COS-STAB auditability** via schema-checked `metrics.jsonl` +
   `run_meta.json` logs and an offline validator.
 
@@ -52,6 +54,16 @@ typical core scripts include:
   See `cos_cns/README.md` for exact run commands, run IDs, and the mapping
   from scripts to paper figures.
 
+- `cos_crossprobe/` – falsification-oriented Pantheon+--CMB cross-probe
+  pipeline for testing possible COS time-arrow signatures across independent
+  observational probes. The workflow performs a Pantheon+ axis scan,
+  split-sample validation, recurrence-map construction, and fixed-axis CMB
+  mutual-information follow-up. The current reproduced run is compatible with
+  the null hypothesis and should **not** be interpreted as a detection claim.
+  Its main role is to provide an empirical stress test / audit supplement for
+  COS-EXP and COS-NUM. See `cos_crossprobe/README.md` for exact data
+  requirements, run commands, and result interpretation.
+
 - `cos_planck_v4_4_0.py` – COS-Planck analysis pipeline. Handles Planck 2018
   CMB maps and masks, Monte Carlo ensembles, HEALPix backends (`healpy`,
   `ducc0`), and COS-specific statistics.
@@ -80,8 +92,9 @@ typical core scripts include:
   quantities) and basic consistency checks with COS forecasts.
 
 Additional helper modules, run scripts (`.sh`, `.yaml`) and small JSON/NPY
-summary files may appear as needed. Large raw survey data (Planck, DESI, GW
-catalogs, etc.) are **not** stored in this repository.
+summary files may appear as needed. Large raw survey data (Planck, DESI,
+Pantheon+SH0ES, GW catalogs, etc.) are **not** stored in this repository unless
+explicitly documented in the corresponding subdirectory.
 
 ---
 
@@ -149,17 +162,22 @@ After activation, the scripts can be run as usual, e.g.:
 You can adapt these examples to your own platform (native Linux, macOS, etc.)
 as long as the listed dependencies are installed.
 
+Individual subdirectories may provide their own `requirements.txt`,
+`environment.yml`, or additional setup notes when a pipeline requires a more
+specific environment.
+
 ---
 
 ## Data
 
 The COS pipelines rely on **public cosmological data sets**, which are not
 bundled with this repository for reasons of size and licensing. Users should
-download the required maps and masks directly from the official archives.
+download the required maps, masks, catalogs, covariance matrices, and survey
+products directly from the official archives.
 
 ### Planck 2018 CMB maps and masks (Release 3)
 
-For the CMB-related COS-Planck and CMB time–arrow analyses, the scripts expect
+For the CMB-related COS-Planck and CMB time-arrow analyses, the scripts expect
 Planck 2018 (Release 3) component-separation maps and the common CMB mask.
 In particular, the reference runs in the COS papers use:
 
@@ -182,6 +200,19 @@ The COS-NUM and COS-EXP papers (and their appendices) specify which of these
 maps and masks are used in each figure or table, together with the Nside,
 smoothing, and masking conventions.
 
+### Pantheon+SH0ES distance and covariance inputs
+
+The `cos_crossprobe/` pipeline expects the following Pantheon+SH0ES files:
+
+- `Pantheon+SH0ES.dat`
+- `Pantheon+SH0ES_STAT+SYS.cov`
+
+These files should be downloaded from the official PantheonPlusSH0ES
+DataRelease repository and placed under the path documented in
+`cos_crossprobe/docs/DATA_AVAILABILITY.md`. They are not necessarily
+redistributed with this repository; users should verify the applicable
+upstream data-release terms before mirroring them in a public fork.
+
 ### Other data sets
 
 The repository is also designed to be used with other public cosmological data,
@@ -190,6 +221,8 @@ for example:
 - Large-scale structure / DESI data products (DESI public data releases).
 - Stochastic gravitational-wave background (SGWB) and strain data from
   LIGO/Virgo/KAGRA open data archives.
+- Additional public CMB, supernova, and survey products used in robustness
+  tests or exploratory COS analyses.
 
 Exact survey releases, catalogue cuts, and additional file paths should be
 configured by the user according to the examples in the scripts and the
@@ -206,14 +239,37 @@ To support scientific reproducibility, the COS code follows these principles:
 - Run configurations (`.sh`, `.yaml`, command-line examples) explicitly list
   the input files, masks, seeds and numerical parameters used in published
   runs.
-- The COS-EXP and COS-NUM papers cite this repository (and, where applicable,
-  a Zenodo DOI snapshot). Future updates, bugfixes and refactorings are
-  recorded via git history and/or a changelog.
 - COS-STAB auditability is tracked via release tags/commit hashes; the COS-NUM
   paper cites immutable code snapshots.
+- Null-compatible and falsification-oriented runs, such as the
+  `cos_crossprobe/` Pantheon+--CMB stress test, are retained as part of the
+  empirical audit trail. Such results are documented explicitly as non-detection
+  outcomes when the statistics do not support a robust COS signal.
+- The COS-EXP and COS-NUM papers cite this repository and, where applicable,
+  a Zenodo DOI snapshot. Future updates, bugfixes and refactorings are recorded
+  via git history and/or a changelog.
 
 If you use this code in your own work, please cite the relevant COS papers
 and, if appropriate, the archived DOI of this repository.
+
+---
+
+## Interpretation of exploratory and null-compatible tests
+
+Some pipelines in this repository are designed as exploratory probes or
+stress tests rather than as direct evidence claims. In particular, a
+null-compatible result should not be read as a failure of the software or as a
+positive detection.
+
+For example, the `cos_crossprobe/` package implements a Pantheon+--CMB
+cross-probe workflow for testing possible COS time-arrow signatures across
+independent observational channels. Its current reproduced run is compatible
+with the null hypothesis and is best interpreted as a falsification-oriented
+audit result, not as evidence that a COS time-arrow signal has been detected.
+
+This distinction is intentional. The repository is meant to preserve both
+positive/forecast-oriented calculations and negative or null-compatible
+empirical checks, provided that their status is clearly documented.
 
 ---
 
