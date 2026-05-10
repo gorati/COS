@@ -1,0 +1,6 @@
+cff-version: 1.2.0
+title: "COS Cross-Probe Time-Arrow Pipeline"
+message: "If you use this pipeline, cite the associated COS preprint/repository and the underlying Pantheon+/Planck data products."
+type: software
+version: 0.1.0
+abstract: "Falsification-oriented Pantheon+ to CMB cross-probe pipeline for COS time-arrow tests. Baseline results are null-compatible and should not be interpreted as a detection claim."

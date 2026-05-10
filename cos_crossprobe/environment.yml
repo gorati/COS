@@ -1,0 +1,15 @@
+name: cos-crossprobe
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - numpy
+  - pandas
+  - matplotlib
+  - scipy
+  - astropy
+  - healpy
+  - pip
+  - pip:
+      # Optional; uncomment if Bayesian model comparison is needed.
+      # - dynesty
