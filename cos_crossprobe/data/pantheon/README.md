@@ -1,6 +1,6 @@
 # Pantheon+ / SH0ES input files
 
-Bundled files from the supplied working ZIP:
+The Pantheon+SH0ES files are not redistributed in this repository. Download them from the official PantheonPlusSH0ES DataRelease repository and place them in data/pantheon/.
 
 ```text
 Pantheon+SH0ES.dat
