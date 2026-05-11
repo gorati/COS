@@ -3,6 +3,14 @@
 This repository folder contains an exploratory COS-DM / SPARC rotation-curve prototype.
 It is connected to the COS program as a **phenomenological effective-sector stress test**, not as a direct microscopic derivation of dark matter from COS geometry.
 
+# COS-DM SPARC
+
+**COS-DM** stands for **Collapsing Structure Dark-sector / Dark-matter
+phenomenology**. The name denotes an exploratory COS-compatible effective
+dark-sector program, tested here on SPARC galaxy rotation curves. It should not
+be read as a claim that the COS framework already derives dark matter from its
+microscopic structure.
+
 ## Scientific status
 
 The current package should be read as an exploratory numerical supplement. Its main role is to ask what kind of baryon-coupled extra-acceleration law a later COS-compatible effective dark sector would need to reproduce on SPARC rotation curves.
