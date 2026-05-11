@@ -1,232 +1,427 @@
 # COS numerical pipelines and empirical tests
 
-This repository collects research code related to the **COS** (Collapsing
-Structure) framework. It focuses on numerical pipelines and empirical tests
-used in the COS-NUM and COS-EXP papers, but may also contain additional
-exploratory scripts and utilities.
+This repository collects research code related to the **COS** (**Collapsing
+Structure**) framework. It focuses on numerical pipelines, empirical tests, and
+reproducibility supplements used by the COS-NUM, COS-EXP, COS-CNS, and related
+COS papers.
+
+The repository contains both:
+
+- reference or publication-facing numerical pipelines, and
+- exploratory / falsification-oriented stress tests whose current results may be
+  null-compatible rather than positive detections.
 
 The main goals of this repository are:
 
-- to provide **reference implementations** of the key COS analysis pipelines,
-- to document how the **CMB time-arrow**, **SGWB**, **LSS/DESI**, and
-  **Pantheon+--CMB cross-probe** tests are actually computed in practice,
-- to make it possible to **reproduce the figures and tables** in the COS-NUM
-  and COS-EXP articles, given access to the corresponding public survey data,
-- to document falsification-oriented and null-compatible stress tests alongside
-  positive or forecast-oriented COS analyses,
-- to enforce **COS-STAB auditability** via schema-checked `metrics.jsonl` +
-  `run_meta.json` logs and an offline validator.
+- to provide **reference implementations** of key COS analysis pipelines;
+- to document how the **CMB time-arrow**, **SGWB**, **Pantheon+**, **SPARC
+  rotation-curve**, **LSS/DESI**, and **Pantheon+--CMB cross-probe** tests are
+  computed in practice;
+- to make it possible to **reproduce figures, tables, summaries, and
+  diagnostic artifacts** in the COS-NUM, COS-EXP, COS-CNS, and related papers,
+  given access to the corresponding public survey data;
+- to preserve falsification-oriented, null-compatible, and upper-limit runs
+  alongside positive or forecast-oriented analyses;
+- to enforce **COS-STAB auditability** where applicable, using schema-checked
+  `metrics.jsonl`, `run_meta.json`, `summary.json`, or equivalent run metadata;
+- to keep a clear distinction between:
+  - confirmed numerical behavior,
+  - reproducible null results,
+  - empirical upper limits,
+  - exploratory phenomenology,
+  - and speculative COS extensions.
 
-The repository is designed to remain flexible: over time, new scripts and
-modules may be added as the COS program evolves.
-
----
-
-## COS-STAB auditability (metrics.jsonl contract)
-
-The folder `cos_stab/` contains the **COS-STAB audit layer** used by COS-NUM
-to make numerical runs externally auditable. It provides a schema-enforcing
-logger (`metrics.jsonl` + `run_meta.json`), an offline validator, and a combined
-reference runner.
-
-Quick start (audit demo):
-
-- `cd cos_stab`
-- `python cos_core_sim_combined.py --steps 1000 --seed 2025 --lambda-geom 1.0 --output metrics.jsonl --run-meta run_meta.json`
-- `python validate_metrics.py metrics.jsonl --schema extended --strict`
-
-These artifacts and commands correspond to COS-NUM Appendix D.10.
+The repository is designed to remain flexible. Over time, new scripts and
+subprojects may be added as the COS program evolves.
 
 ---
 
-## Repository contents (core scripts)
+## Scientific status of the included pipelines
+
+Not every subproject has the same evidential status.
+
+Some folders provide positive validation of a specific operational or numerical
+layer, while others provide null-compatible stress tests or upper limits. In
+particular:
+
+- `cos_cns/` provides a positive numerical validation of the reference
+  COS-CNS causality / no-signaling implementation.
+- `cos_crossprobe/` provides a reproducible null-compatible Pantheon+--CMB
+  cross-probe stress test.
+- `cos_pantheon/` provides an exploratory Pantheon+ axis-scan / axis-candidate
+  generator. It is not a stand-alone detection claim.
+- `cos_sgwb_cosplusastro/` provides a COS+astrophysical SGWB inference pipeline
+  and a current upper-limit / null-compatible result.
+- `cos_dm_sparc/` provides an exploratory COS-DM effective dark-sector
+  phenomenology prototype tested on SPARC rotation curves. It is not a
+  derivation of dark matter from the COS microstructure.
+
+This status separation is intentional. The repository is meant to support a
+disciplined COS audit trail, not to overstate exploratory results.
+
+---
+
+## COS-STAB auditability
+
+The folder `cos_stab/` contains the **COS-STAB audit layer** used by COS-NUM to
+make numerical runs externally auditable. It provides a schema-enforcing logger,
+an offline validator, and a combined reference runner.
+
+Typical audit artifacts include:
+
+```text
+metrics.jsonl
+run_meta.json
+summary.json
+config.json
+timeseries.csv
+```
+
+Quick start for the audit demo:
+
+```bash
+cd cos_stab
+python cos_core_sim_combined.py --steps 1000 --seed 2025 --lambda-geom 1.0 --output metrics.jsonl --run-meta run_meta.json
+python validate_metrics.py metrics.jsonl --schema extended --strict
+```
+
+These artifacts and commands correspond to the COS-NUM auditability layer.
+
+---
+
+## Repository contents
 
 The exact layout may change as the project is cleaned up and refactored, but
-typical core scripts include:
+the main subprojects are:
 
-- `cos_stab/` – COS-STAB audit logger + validator + combined reference runner
-  (metrics.jsonl contract for COS-NUM).
+### `cos_stab/`
 
-- `cos_cns/` – reproducible numerics for the COS-CNS paper (operational
-  causality, no-signaling, strict causal cone, and scheduling diagnostics on
-  discrete quantum graph dynamics). Produces COS-NUM/COS-STAB–style run
-  artifacts under `runs/<run_id>/...` and publication figures under `figs/`.
-  See `cos_cns/README.md` for exact run commands, run IDs, and the mapping
-  from scripts to paper figures.
+COS-STAB audit logger, validator, and combined reference runner.
 
-- `cos_crossprobe/` – falsification-oriented Pantheon+--CMB cross-probe
-  pipeline for testing possible COS time-arrow signatures across independent
-  observational probes. The workflow performs a Pantheon+ axis scan,
-  split-sample validation, recurrence-map construction, and fixed-axis CMB
-  mutual-information follow-up. The current reproduced run is compatible with
-  the null hypothesis and should **not** be interpreted as a detection claim.
-  Its main role is to provide an empirical stress test / audit supplement for
-  COS-EXP and COS-NUM. See `cos_crossprobe/README.md` for exact data
-  requirements, run commands, and result interpretation.
+Role:
 
-- `cos_planck_v4_4_0.py` – COS-Planck analysis pipeline. Handles Planck 2018
-  CMB maps and masks, Monte Carlo ensembles, HEALPix backends (`healpy`,
-  `ducc0`), and COS-specific statistics.
-
-- `cmb_time_arrow_MI_scan_axes.py` – mutual-information–based CMB time-arrow
-  pipeline. For a distinguished COS axis and a control set of random axes it
-  computes scale-dependent ΔMI(ℓ_max) curves and monotonicity statistics,
-  producing JSON outputs that can be used for further analysis.
-
-- `cos_cmb_timearrow_bayes.py` – Bayesian post-processing of the MI
-  time-arrow results. Fits simple parametric models (constant, linear,
-  COS-specific linear, quadratic) to the averaged ΔMI(ℓ_max) curve using
-  nested sampling (`dynesty`), and quantifies the strength of the preference
-  for a non-constant trend. Also evaluates the global significance of the
-  COS-axis monotonicity compared to ΛCDM random axes.
-
-- `cos_sgwb_cosplusastro.py` – numerical pipeline for stochastic
-  gravitational-wave background (SGWB) analyses, combining astrophysical and
-  COS components. Uses standard GW tools (`pygwb`, `gwpy`, `bilby`, `dynesty`)
-  to compute evidences, Bayes factors and posterior distributions for SGWB
-  models.
-
-- `cos_desi_tests.py` – scripts to test COS predictions against large-scale
-  structure data (e.g. DESI-like surveys). Includes topological or
-  morphological statistics (e.g. Minkowski functionals, filamentarity-related
-  quantities) and basic consistency checks with COS forecasts.
-
-Additional helper modules, run scripts (`.sh`, `.yaml`) and small JSON/NPY
-summary files may appear as needed. Large raw survey data (Planck, DESI,
-Pantheon+SH0ES, GW catalogs, etc.) are **not** stored in this repository unless
-explicitly documented in the corresponding subdirectory.
+- numerical audit layer;
+- schema-checked run metadata;
+- reproducibility support for COS-NUM.
 
 ---
 
-## Installation / environment
+### `cos_cns/`
 
-There are many possible ways to install the required Python packages. Below
-are two example workflows that have been tested with the COS-related scripts.
+Reproducible numerics for the COS-CNS paper:
 
-In all cases it is strongly recommended to use an **isolated environment**
-(virtualenv, conda/micromamba) to avoid conflicts with system packages.
+**Causality, Signal-Locality (No-Signaling), and Finite-Speed Influence in
+Non-Unitary Discrete Spacetime Dynamics.**
 
-### Option A: Python virtual environment (Linux / WSL + pip)
+Role:
 
-On Windows, a convenient setup is to use **WSL2** with an Ubuntu distribution:
+- operational causality checks;
+- no-signaling diagnostics;
+- hard-local cone sanity checks;
+- scheduling / confluence diagnostics;
+- NC1--NC4 controls;
+- COS-NUM / COS-STAB-style run artifacts.
 
-1. Install WSL and Ubuntu:
+The archived publication run passes the no-signaling and confluent-scheduling
+checks for `chain`, `star`, and connected Erdos--Renyi topologies, while the
+non-confluent controls display the expected violations.
 
-   `wsl --install -d Ubuntu`
+See:
 
-2. Inside the Linux/WSL shell install system Python and tools:
+```text
+cos_cns/README.md
+```
 
-   - `sudo add-apt-repository ppa:deadsnakes/ppa`
-   - `sudo apt update`
-   - `sudo apt install -y python3.11 python3.11-venv python3-pip gfortran`
+for exact run commands, run IDs, and the mapping from scripts to paper figures.
 
-3. Create and activate a virtual environment:
+---
 
-   - `python3.11 -m venv ~/cmbenv`
-   - `source ~/cmbenv/bin/activate`
+### `cos_crossprobe/`
 
-4. Upgrade pip and install the core Python dependencies:
+Falsification-oriented Pantheon+--CMB cross-probe pipeline for testing possible
+COS time-arrow signatures across independent observational probes.
 
-   - `pip install -U pip wheel`
-   - `pip install numpy scipy matplotlib astropy tqdm ducc0 healpy dynesty bilby pygwb gwpy`
+Workflow:
 
-Once the environment is active (`source ~/cmbenv/bin/activate`), the COS
-scripts can be run, for example:
+```text
+Pantheon+ axis scan
+→ split-sample validation
+→ recurrence-map construction
+→ fixed-axis CMB mutual-information follow-up
+```
 
-- `python cos_planck_v4_4_0.py`
+Current status:
 
-### Option B: micromamba / conda-forge environment
+- reproduced run is compatible with the null hypothesis;
+- no COS time-arrow detection claim is made;
+- suitable as an empirical stress test / audit supplement for COS-EXP and
+  COS-NUM.
 
-Alternatively, you can use a conda-style environment with **micromamba**:
+See:
 
-1. Download micromamba (Linux):
+```text
+cos_crossprobe/README.md
+```
 
-   - `cd ~`
-   - `curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba`
+for data requirements, run commands, and result interpretation.
 
-2. Initialize micromamba:
+---
 
-   - `export MAMBA_ROOT_PREFIX="$HOME/micromamba"`
-   - `./bin/micromamba shell init -s bash`
-   - `exec bash`   (restart the shell so that `micromamba` is available)
+### `cos_pantheon/`
 
-3. Create and activate a `cmb` environment:
+Pantheon+ axis-scan pipeline.
 
-   - `micromamba create -y -n cmb -c conda-forge python=3.11 numpy scipy matplotlib astropy tqdm ducc0 healpy dynesty bilby pygwb gwpy`
-   - `micromamba activate cmb`
+Role:
 
-After activation, the scripts can be run as usual, e.g.:
+- exploratory low-redshift Pantheon+ axis scan;
+- fixed COS-axis test;
+- sky-scramble null analysis;
+- generation of axis candidates for follow-up tests such as `cos_crossprobe/`.
 
-- `python cos_cmb_timearrow_bayes.py`
+Current status:
 
-You can adapt these examples to your own platform (native Linux, macOS, etc.)
-as long as the listed dependencies are installed.
+- the fixed COS-axis result is null-compatible;
+- the scan maximum is exploratory and look-elsewhere limited;
+- this should not be interpreted as a stand-alone detection.
 
-Individual subdirectories may provide their own `requirements.txt`,
-`environment.yml`, or additional setup notes when a pipeline requires a more
-specific environment.
+See:
+
+```text
+cos_pantheon/README.md
+```
+
+for the active q0-fixed run and Pantheon+SH0ES data instructions.
+
+---
+
+### `cos_sgwb_cosplusastro/`
+
+COS+astrophysical stochastic gravitational-wave background (SGWB) inference
+pipeline.
+
+Role:
+
+- combines an astrophysical SGWB component with a COS-like cosmological
+  component;
+- uses standard GW inference tools such as `pygwb`, `gwpy`, `bilby`, and
+  `dynesty`;
+- computes posterior summaries, evidences, Bayes factors, and upper-limit
+  scales.
+
+Current status:
+
+- no significant COS-SGWB signal is detected in the current short H1--L1 run;
+- the astro-only model is mildly preferred;
+- the result is best interpreted as a null-compatible upper-limit / stress-test
+  result, not as a COS-SGWB detection.
+
+Important dependency note:
+
+- this subproject is sensitive to the installed `pygwb`--`gwpy` version
+  combination;
+- use the subproject-specific `requirements.txt` / `environment.yml`;
+- if using micromamba/conda, the recommended constraint is currently:
+
+```text
+gwpy<4
+```
+
+See:
+
+```text
+cos_sgwb_cosplusastro/README.md
+```
+
+for the exact environment and run instructions.
+
+---
+
+### `cos_dm_sparc/`
+
+Exploratory COS-DM SPARC rotation-curve prototype.
+
+Here **COS-DM** means:
+
+```text
+Collapsing Structure dark-sector / dark-matter phenomenology
+```
+
+Role:
+
+- exploratory effective dark-sector phenomenology;
+- SPARC galaxy rotation-curve fits;
+- testing whether a COS-compatible emergent dark sector could reproduce a
+  baryon-coupled extra-acceleration structure.
+
+Current status:
+
+- this is not a derivation of dark matter from COS microstructure;
+- it should not be presented as "COS proves dark matter";
+- it is a phenomenological target model and empirical stress test.
+
+See:
+
+```text
+cos_dm_sparc/README.md
+```
+
+for the active model branch, data layout, and result interpretation.
+
+---
+
+### Legacy / standalone scripts
+
+Some older or standalone scripts may remain in the repository root or in legacy
+folders, including CMB time-arrow, COS-Planck, SGWB, or DESI-related scripts.
+Examples may include:
+
+- `cos_planck_v4_4_0.py`
+- `cmb_time_arrow_MI_scan_axes.py`
+- `cos_cmb_timearrow_bayes.py`
+- `cos_desi_tests.py`
+
+These scripts are retained for provenance or backward compatibility unless they
+have been superseded by a cleaned subproject folder. Prefer the subproject
+README files when a cleaned folder exists.
+
+---
+
+## Installation / environments
+
+There is no single universal environment that is optimal for every subproject.
+Some pipelines are lightweight, while others depend on gravitational-wave,
+CMB, or nested-sampling packages with stricter version requirements.
+
+Use an isolated environment for each major workflow.
+
+### Lightweight pipelines
+
+For simpler NumPy/Matplotlib-based pipelines:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip wheel
+python -m pip install numpy scipy matplotlib pandas astropy
+```
+
+On Windows:
+
+```bat
+python -m venv .venv
+.venv\Scripts\activate
+python -m pip install -U pip wheel
+python -m pip install numpy scipy matplotlib pandas astropy
+```
+
+### CMB-oriented environment
+
+For CMB / HEALPix-related workflows, install the required HEALPix backend:
+
+```bash
+micromamba create -y -n cmb -c conda-forge python=3.11 numpy scipy matplotlib pandas astropy tqdm healpy ducc0 dynesty bilby
+micromamba activate cmb
+```
+
+### SGWB environment
+
+For `cos_sgwb_cosplusastro/`, prefer the subproject-specific environment file.
+A typical micromamba/conda setup is:
+
+```bash
+micromamba create -y -n cos-sgwb -c conda-forge python=3.11 numpy scipy matplotlib pandas astropy bilby dynesty "gwpy<4"
+micromamba activate cos-sgwb
+python -m pip install pygwb
+```
+
+Then run the subproject dependency check:
+
+```bash
+cd cos_sgwb_cosplusastro
+bash scripts/00_check_environment.sh
+```
+
+If the SGWB run fails inside `pygwb.omega_spectra` with a `FrequencySeries`
+`_print_slots` error, use the pinned environment recommended by the
+`cos_sgwb_cosplusastro/` documentation.
+
+### Subproject-specific environments
+
+Individual subdirectories may provide their own:
+
+```text
+requirements.txt
+environment.yml
+environment_resolved.txt
+```
+
+Prefer those files over the generic examples above.
 
 ---
 
 ## Data
 
-The COS pipelines rely on **public cosmological data sets**, which are not
-bundled with this repository for reasons of size and licensing. Users should
-download the required maps, masks, catalogs, covariance matrices, and survey
-products directly from the official archives.
+The COS pipelines rely on **public cosmological and astrophysical data sets**.
+Large raw survey products are generally not bundled with this repository for
+reasons of size, licensing, and provenance. Users should download maps, masks,
+catalogs, covariance matrices, and strain data directly from the official
+archives unless a subproject explicitly documents bundled data.
 
-### Planck 2018 CMB maps and masks (Release 3)
+### Planck 2018 CMB maps and masks
 
-For the CMB-related COS-Planck and CMB time-arrow analyses, the scripts expect
-Planck 2018 (Release 3) component-separation maps and the common CMB mask.
-In particular, the reference runs in the COS papers use:
+For CMB-related COS-Planck and time-arrow analyses, the scripts may expect
+Planck 2018 Release 3 component-separation maps and the common CMB mask.
 
-- SMICA IQU CMB map  
-  https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/component-maps/cmb/COM_CMB_IQU-smica_2048_R3.00_full.fits
+Typical inputs include:
 
-- NILC IQU CMB map  
-  https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/component-maps/cmb/COM_CMB_IQU-nilc_2048_R3.00_full.fits
+- SMICA IQU CMB map
+- NILC IQU CMB map
+- SEVEM IQU CMB map
+- Commander IQU CMB map
+- common CMB mask, INT, Nside=2048
 
-- SEVEM IQU CMB map  
-  https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/component-maps/cmb/COM_CMB_IQU-sevem_2048_R3.00_full.fits
+The exact files, Nside values, smoothing conventions, masks, and preprocessing
+steps are documented in the relevant subproject or paper.
 
-- Commander IQU CMB map  
-  https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/component-maps/cmb/COM_CMB_IQU-commander_2048_R3.00_full.fits
+### Pantheon+SH0ES data
 
-- Common CMB mask (INT, Nside=2048)  
-  https://irsa.ipac.caltech.edu/data/Planck/release_3/ancillary-data/masks/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits
+The `cos_pantheon/` and `cos_crossprobe/` pipelines expect:
 
-The COS-NUM and COS-EXP papers (and their appendices) specify which of these
-maps and masks are used in each figure or table, together with the Nside,
-smoothing, and masking conventions.
-
-### Pantheon+SH0ES distance and covariance inputs
-
-The `cos_crossprobe/` pipeline expects the following Pantheon+SH0ES files:
-
-- `Pantheon+SH0ES.dat`
-- `Pantheon+SH0ES_STAT+SYS.cov`
+```text
+Pantheon+SH0ES.dat
+Pantheon+SH0ES_STAT+SYS.cov
+```
 
 These files should be downloaded from the official PantheonPlusSH0ES
-DataRelease repository and placed under the path documented in
-`cos_crossprobe/docs/DATA_AVAILABILITY.md`. They are not necessarily
-redistributed with this repository; users should verify the applicable
-upstream data-release terms before mirroring them in a public fork.
+DataRelease repository and placed under the path documented in the corresponding
+subproject:
 
-### Other data sets
+```text
+cos_pantheon/docs/DATA_AVAILABILITY.md
+cos_crossprobe/docs/DATA_AVAILABILITY.md
+```
 
-The repository is also designed to be used with other public cosmological data,
-for example:
+### SPARC data
 
-- Large-scale structure / DESI data products (DESI public data releases).
-- Stochastic gravitational-wave background (SGWB) and strain data from
-  LIGO/Virgo/KAGRA open data archives.
-- Additional public CMB, supernova, and survey products used in robustness
-  tests or exploratory COS analyses.
+The `cos_dm_sparc/` prototype uses SPARC galaxy rotation-curve data and mass
+models.
 
-Exact survey releases, catalogue cuts, and additional file paths should be
-configured by the user according to the examples in the scripts and the
-descriptions in the COS-NUM and COS-EXP papers.
+The subproject documentation specifies whether the files are bundled or should
+be downloaded from the official SPARC source. Before redistributing SPARC files
+in a public fork, verify the applicable upstream data-use and citation
+requirements.
+
+### Gravitational-wave data
+
+The `cos_sgwb_cosplusastro/` pipeline uses public LIGO/Virgo/KAGRA-style data
+access through the standard GW software stack. The exact GPS windows, detector
+pair, quality cuts, and `pygwb` configuration are documented in the subproject.
+
+### DESI / LSS data
+
+DESI and large-scale-structure scripts may require external catalogues, mocks,
+or summary products. These are not stored in the repository unless explicitly
+documented.
 
 ---
 
@@ -234,42 +429,66 @@ descriptions in the COS-NUM and COS-EXP papers.
 
 To support scientific reproducibility, the COS code follows these principles:
 
-- Scripts contain comments and (where practical) version strings or references
-  to specific COS-NUM / COS-EXP versions.
-- Run configurations (`.sh`, `.yaml`, command-line examples) explicitly list
-  the input files, masks, seeds and numerical parameters used in published
-  runs.
-- COS-STAB auditability is tracked via release tags/commit hashes; the COS-NUM
-  paper cites immutable code snapshots.
-- Null-compatible and falsification-oriented runs, such as the
-  `cos_crossprobe/` Pantheon+--CMB stress test, are retained as part of the
-  empirical audit trail. Such results are documented explicitly as non-detection
-  outcomes when the statistics do not support a robust COS signal.
-- The COS-EXP and COS-NUM papers cite this repository and, where applicable,
-  a Zenodo DOI snapshot. Future updates, bugfixes and refactorings are recorded
-  via git history and/or a changelog.
+- each publication-facing subproject should include a local `README.md`;
+- run scripts should explicitly specify input files, masks, seeds, priors, and
+  numerical parameters;
+- publication-facing outputs should include `config.json`, `summary.json`,
+  `run_summary.json`, `model_comparison.csv`, `metrics.jsonl`, or equivalent
+  metadata where appropriate;
+- dependency-sensitive projects should include `requirements.txt`,
+  `environment.yml`, or an equivalent environment record;
+- COS-STAB auditability should be tracked by release tags, commit hashes, and
+  immutable code snapshots when cited in papers;
+- null-compatible and falsification-oriented runs should be preserved as part
+  of the empirical audit trail, but explicitly documented as non-detection
+  outcomes;
+- upper-limit results should be described as upper limits, not as detections.
 
-If you use this code in your own work, please cite the relevant COS papers
-and, if appropriate, the archived DOI of this repository.
+The COS-EXP, COS-NUM, COS-CNS, and related papers should cite this repository
+or, preferably, an archived Zenodo DOI snapshot corresponding to the exact
+version used.
 
 ---
 
 ## Interpretation of exploratory and null-compatible tests
 
-Some pipelines in this repository are designed as exploratory probes or
-stress tests rather than as direct evidence claims. In particular, a
-null-compatible result should not be read as a failure of the software or as a
-positive detection.
+Some pipelines in this repository are designed as exploratory probes or stress
+tests rather than as direct evidence claims.
 
-For example, the `cos_crossprobe/` package implements a Pantheon+--CMB
-cross-probe workflow for testing possible COS time-arrow signatures across
-independent observational channels. Its current reproduced run is compatible
-with the null hypothesis and is best interpreted as a falsification-oriented
-audit result, not as evidence that a COS time-arrow signal has been detected.
+A null-compatible result should not be read as:
 
-This distinction is intentional. The repository is meant to preserve both
-positive/forecast-oriented calculations and negative or null-compatible
-empirical checks, provided that their status is clearly documented.
+- a software failure;
+- a positive detection;
+- or a falsification of the entire COS framework.
+
+Examples:
+
+- `cos_crossprobe/` currently gives a null-compatible Pantheon+--CMB
+  cross-probe result.
+- `cos_pantheon/` gives an exploratory axis-scan result, not a detection.
+- `cos_sgwb_cosplusastro/` gives a current SGWB upper-limit / stress-test
+  result, not a COS-SGWB detection.
+- `cos_dm_sparc/` gives effective dark-sector phenomenology, not a derivation
+  of dark matter.
+
+This distinction is intentional. The repository preserves positive,
+null-compatible, and upper-limit results, provided that their status is clearly
+documented.
+
+---
+
+## Recommended publication placement
+
+The current subprojects map naturally to the COS paper series as follows:
+
+| Subproject | Main publication role | Status |
+|---|---|---|
+| `cos_stab/` | COS-NUM / COS-STAB auditability | audit layer |
+| `cos_cns/` | COS-CNS, COS-NUM supplement | positive operational validation |
+| `cos_crossprobe/` | COS-EXP, COS-NUM supplement | null-compatible stress test |
+| `cos_pantheon/` | COS-EXP exploratory axis scan | candidate generator, not detection |
+| `cos_sgwb_cosplusastro/` | COS-EXP SGWB section, COS-NUM supplement | upper-limit / null-compatible |
+| `cos_dm_sparc/` | COS-EXP or separate COS-DM supplement | exploratory phenomenology |
 
 ---
 
@@ -277,7 +496,7 @@ empirical checks, provided that their status is clearly documented.
 
 This repository is **research code**. While care has been taken to make the
 pipelines transparent and reproducible, the scripts are not guaranteed to be
-production-grade software. Interfaces, file names and directory structure may
-change as the COS program evolves.
+production-grade software. Interfaces, filenames, defaults, environments, and
+directory structures may change as the COS program evolves.
 
-Bug reports, questions and suggestions are welcome via GitHub issues.
+Bug reports, questions, and suggestions are welcome via GitHub issues.
