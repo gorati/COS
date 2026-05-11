@@ -5,7 +5,7 @@ It is connected to the COS program as a **phenomenological effective-sector stre
 
 # COS-DM SPARC
 
-**COS-DM** stands for **Collapsing Structure Dark-sector / Dark-matter
+**COS-DM** stands for **Collapsing-Structure Dark-sector / Dark-matter
 phenomenology**. The name denotes an exploratory COS-compatible effective
 dark-sector program, tested here on SPARC galaxy rotation curves. It should not
 be read as a claim that the COS framework already derives dark matter from its
