@@ -1,0 +1,150 @@
+{
+  "A": 0.8081667096497664,
+  "log10_g1": -10.379796122224624,
+  "gamma": 2.205597056580164,
+  "Bs": -0.00549511507263295,
+  "betaV": 0.8497844868852544,
+  "betaT": -0.2958510813304325,
+  "kappaS": 5.04226440204629,
+  "s0S": 0.5187676495052601,
+  "etaSamp": -0.6029694394964119,
+  "alphaS": 7.9203576154139,
+  "Ydisk": 0.5432698559265524,
+  "Ybul": 0.8368704305403722,
+  "model": "global_mod",
+  "modulate": "g1",
+  "loss": "chi2",
+  "objective": 125585.72971210425,
+  "success": true,
+  "message": "Optimization terminated successfully.",
+  "restarts": 3,
+  "seed": 1234,
+  "fit_history": [
+    {
+      "seed": 1234,
+      "objective": 129296.09365260987,
+      "success": true
+    },
+    {
+      "seed": 1235,
+      "objective": 125585.72971210425,
+      "success": true
+    },
+    {
+      "seed": 1236,
+      "objective": 125716.1538103715,
+      "success": true
+    }
+  ],
+  "reg_beta": 0.25,
+  "reg_bs": 4.0,
+  "reg_kappa": 0.5,
+  "reg_lambda": 0.25,
+  "reg_eta_s": 0.25,
+  "reg_alpha_s": 0.15,
+  "beta_bound_amp": 1.5,
+  "beta_bound_g1": 4.0,
+  "lambda_bound": 4.0,
+  "kappa_bound": 6.0,
+  "eta_s_bound": 2.5,
+  "alpha_s_bound": 8.0,
+  "eta_max": 3.0,
+  "bound_hits": {
+    "A": {
+      "value": 0.8081667096497664,
+      "lower": 0.0,
+      "upper": 10.0,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.08081667096497665
+    },
+    "log10_g1": {
+      "value": -10.379796122224624,
+      "lower": -13.0,
+      "upper": -8.0,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 1.297474515278078
+    },
+    "gamma": {
+      "value": 2.205597056580164,
+      "lower": 0.1,
+      "upper": 3.0,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.7351990188600547
+    },
+    "Bs": {
+      "value": -0.00549511507263295,
+      "lower": -1.5,
+      "upper": 1.5,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.0036634100484219667
+    },
+    "Ydisk": {
+      "value": 0.5432698559265524,
+      "lower": 0.1,
+      "upper": 1.5,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.36217990395103494
+    },
+    "Ybul": {
+      "value": 0.8368704305403722,
+      "lower": 0.0,
+      "upper": 1.5,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.5579136203602482
+    },
+    "betaV": {
+      "value": 0.8497844868852544,
+      "lower": -4.0,
+      "upper": 4.0,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.2124461217213136
+    },
+    "betaT": {
+      "value": -0.2958510813304325,
+      "lower": -4.0,
+      "upper": 4.0,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.07396277033260812
+    },
+    "kappaS": {
+      "value": 5.04226440204629,
+      "lower": 0.1,
+      "upper": 6.0,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.8403774003410484
+    },
+    "s0S": {
+      "value": 0.5187676495052601,
+      "lower": -2.5,
+      "upper": 2.5,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.20750705980210404
+    },
+    "etaSamp": {
+      "value": -0.6029694394964119,
+      "lower": -2.5,
+      "upper": 2.5,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.24118777579856476
+    },
+    "alphaS": {
+      "value": 7.9203576154139,
+      "lower": 0.25,
+      "upper": 8.0,
+      "at_lower": false,
+      "at_upper": false,
+      "fraction_of_upper_abs": 0.9900447019267375
+    }
+  }
+}
