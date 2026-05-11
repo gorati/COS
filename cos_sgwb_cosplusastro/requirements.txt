@@ -1,0 +1,9 @@
+numpy
+scipy
+matplotlib
+pandas
+astropy
+bilby
+dynesty
+pygwb
+gwpy<4

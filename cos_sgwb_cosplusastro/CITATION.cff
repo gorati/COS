@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: "COS-SGWB Cos+Astro: stochastic-background parameter-estimation prototype"
+message: "If you use this software, please cite the corresponding COS-NUM/COS-EXP materials and the archived repository snapshot."
+type: software
+authors:
+  - name: "Attila Görhöny"
+version: "0.1.0"
+date-released: "2026-05-11"
+license: MIT
