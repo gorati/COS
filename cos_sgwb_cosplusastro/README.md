@@ -86,12 +86,6 @@ Then run the full pipeline:
 bash scripts/01_run_full_pipeline.sh
 ```
 
-On Windows, use:
-
-```bat
-scripts_run_full_pipeline.bat
-```
-
 The full rerun requires internet access to public GWOSC data and a working
 `pygwb_pipe` installation. It can be slow and sensitive to public-data server
 availability.
