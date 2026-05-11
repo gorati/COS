@@ -5,7 +5,7 @@ COS-CNS FAST GRAPH pipeline (English) (multi-topology, COS-NUM/COS-STAB outputs,
 
 Main features:
 - chain / star / Erdos-Renyi (összefüggő) topológián futtatható referencia instanciálás
-- no-signaling (TVD), strict cone (távolság-sáv heatmap), scheduling (confluent vs nonconfluent), NC1–NC4
+- no-signaling (TVD), hard-local cone sanity-check (távolság-sáv heatmap), scheduling (confluent vs nonconfluent), NC1–NC4
 - COS-NUM: runs/<run_id>/config.json + outputs/*.csv/*.npz + outputs/summary.json
 - COS-STAB: logs/timeseries.csv
 - LaTeX kanonikus ábrák: csak a publish_topology-hoz másolódnak ki (figs/*.pdf + fig-nc-*.pdf)
@@ -13,7 +13,7 @@ Main features:
 Note: this script does not rely on Python's hash() for seeds, so PYTHONHASHSEED is not required for reproducibility.
 
 Example (Windows CMD, single line):
-  python cos_cns_pipeline_fast_graph_multi.py --topology_list chain,star,er --publish_topology er --N 15 --steps 12 --trials 60 --ntraj 1200 --seed 42
+  python cos_cns_pipeline_trajectories_graph_v2.py --topology_list chain,er --publish_topology chain --N 19 --steps 24 --trials 40 --ntraj 600 --gamma 0.05 --seed 42 --edge_gate sqrt_swap --eps_sched 1e-10 --eps_ns 1e-3
 
 Progress:
   Enabled by default. Disable: --no_progress
@@ -21,6 +21,7 @@ Progress:
 """
 import argparse, csv, json
 import sys, time
+import math
 from dataclasses import asdict, dataclass
 from typing import Optional
 from datetime import datetime, timezone
@@ -211,21 +212,42 @@ def apply_2q_gate(psi, gate4, N, q1, q2):
     psi_t=np.moveaxis(psi_t,[0,1],[a,b])
     return psi_t.reshape(-1)
 
-def amp_damp_step(psi,N,q,gamma,rng):
-    g=float(gamma)
-    if g<=0: return psi
-    psi_t=psi.reshape([2]*N)
-    psi_t=np.moveaxis(psi_t,q,0)
-    a0=psi_t[0].reshape(-1); a1=psi_t[1].reshape(-1)
-    p_jump=g*float(np.vdot(a1,a1).real)
-    if rng.random()<p_jump and p_jump>0:
-        a0_new=np.sqrt(g)*a1; a1_new=np.zeros_like(a1); norm=np.sqrt(p_jump)
+def amp_damp_step(psi, N, q, gamma, rng, record=None):
+    """Single-qubit amplitude damping *trajectory* update on qubit q.
+
+    Notes:
+    - This is a *sampled Kraus* step (quantum trajectory). Averaging over trajectories
+      approximates the underlying CPTP amplitude-damping channel.
+    - Implemented in-place on the flat state vector (low Python overhead).
+    - If `record` is a numpy int array of length N, we increment record[q] on a 'jump'.
+    """
+    g = float(gamma)
+    if g <= 0.0:
+        return psi
+
+    # Flat-index convention induced by psi.reshape([2]*N)
+    block = 1 << (N - 1 - q)
+    psi2 = psi.reshape(-1, 2 * block)
+    a0 = psi2[:, :block]
+    a1 = psi2[:, block:]
+
+    # Jump probability = g * population in |1> on qubit q
+    p1 = float(np.vdot(a1.ravel(), a1.ravel()).real)
+    p_jump = g * p1
+
+    u = rng.random()
+    if p_jump > 0.0 and u < p_jump:
+        if record is not None:
+            record[q] += 1
+        a0[...] = math.sqrt(g) * a1
+        a1[...] = 0.0
+        norm = math.sqrt(p_jump)
     else:
-        a0_new=a0; a1_new=np.sqrt(1-g)*a1; norm=np.sqrt(max(1-p_jump,1e-16))
-    psi_new=np.stack([a0_new,a1_new],axis=0).reshape(2,*psi_t.shape[1:])
-    psi_new=np.moveaxis(psi_new,0,q).reshape(-1)
-    psi_new/=norm
-    return psi_new
+        a1[...] *= math.sqrt(max(1.0 - g, 0.0))
+        norm = math.sqrt(max(1.0 - p_jump, 1e-16))
+
+    psi /= norm
+    return psi
 
 def z_probs_site(psi,N,q):
     dim=psi.size; mask=1<<(N-1-q)
@@ -259,12 +281,18 @@ class Params:
     p:float=0.4
 
 class GraphDynamics:
-    """One time step = one matching layer + damping. Strict cone speed: 1 per step."""
+    """One time step = one matching layer + damping.
+
+    Framing (avoid overstating a tautology):
+    - This is a *hard-local* radius-1-per-step reference instantiation.
+    - The resulting "cone" behavior is by construction and used as a sanity-check,
+      not as a Lieb-Robinson-type theorem for long-range tails.
+    """
     def __init__(self, p: Params, edges, matchings, edge_gate):
         self.p=p; self.edges=edges; self.matchings=matchings; self.L=len(matchings)
         self.edge_gate = edge_gate
 
-    def step(self, psi, rng, t, permute_within):
+    def step(self, psi, rng, t, permute_within, record=None):
         M=self.matchings[t%self.L].copy()
         if permute_within:
             M = list(reversed(M))  # determinisztikus permutáció; nem fogyaszt RNG-t
@@ -272,16 +300,16 @@ class GraphDynamics:
             a,b=(u,v) if u<v else (v,u)
             psi=apply_2q_gate(psi,self.edge_gate,self.p.N,a,b)
         for q in range(self.p.N):
-            psi=amp_damp_step(psi,self.p.N,q,self.p.gamma,rng)
+            psi=amp_damp_step(psi,self.p.N,q,self.p.gamma,rng,record)
         return psi
 
-    def step_nonconfluent(self, psi, rng):
+    def step_nonconfluent(self, psi, rng, record=None):
         E=self.edges.copy(); rng.shuffle(E)
         for u,v in E:
             a,b=(u,v) if u<v else (v,u)
             psi=apply_2q_gate(psi,self.edge_gate,self.p.N,a,b)
         for q in range(self.p.N):
-            psi=amp_damp_step(psi,self.p.N,q,self.p.gamma,rng)
+            psi=amp_damp_step(psi,self.p.N,q,self.p.gamma,rng,record)
         return psi
 
 def nonlocal_filter_like(psi,p,rng,A,B):
@@ -565,10 +593,10 @@ def fig_nosignal(outpath, rows, dist_AB: int):
     plt.plot(t, tv, "o-", label=r"$D_{\mathrm{TV}}(p_B^0,p_B^1)$ (Z-mérés)")
     if dist_AB is not None and dist_AB >= 0:
         plt.axvline(dist_AB, linestyle="--", color="black", label=f"graph distance d={dist_AB}")
-        plt.axvspan(0, dist_AB, alpha=0.12, label="outside the cone (ideally ~0)")
+        plt.axvspan(0, dist_AB, alpha=0.12, label="outside the hard-local cone (baseline; ideally ~0)")
     plt.xlabel(r"number of steps $t$")
     plt.ylabel("TVD")
-    plt.title("No-signaling intervention test")
+    plt.title("No-signaling intervention test (baseline hard-local dynamics)")
     plt.legend()
     savefig(outpath)
 
@@ -576,7 +604,7 @@ def fig_cone(outpath, infl):
     plt.figure(figsize=(6.6,5))
     plt.imshow(infl,origin="lower",aspect="auto",cmap="inferno",interpolation="nearest")
     plt.colorbar(label=r"$\mathbb{E}[|\Delta\langle Z\rangle|]$")
-    plt.xlabel("graph distance $d$"); plt.ylabel("number of steps $t$"); plt.title("Strict cone (distance-band average)")
+    plt.xlabel("graph distance $d$"); plt.ylabel("number of steps $t$"); plt.title("Hard-local cone (baseline sanity-check)")
     savefig(outpath)
 
 def fig_sched(outpath, rows, title):
@@ -710,21 +738,40 @@ def run_one(topology, args, publish, run_prefix):
     # COS-STAB timeseries
     ensure_dir(logs_dir)
     ts_path=logs_dir/"timeseries.csv"
+    jump_total = 0
+    jump_rate_per_qubit_step = 0.0
     with ts_path.open("w",newline="",encoding="utf-8") as f:
-        w=csv.DictWriter(f,fieldnames=["step","layer_idx","num_edges_layer","p0_B","p1_B"])
+        w=csv.DictWriter(f,fieldnames=["step","layer_idx","num_edges_layer","p0_B","p1_B","jumps_step","jumps_cum","jump_rate_step"])
         w.writeheader()
         rr=np.random.default_rng(args.seed+123456)
         psi=init_state_zero(p.N)
-        for t in range(args.steps+1):
-            pp=z_probs_site(psi,p.N,B); layer=matchings[t%len(matchings)]
-            w.writerow({"step":t,"layer_idx":int(t%len(matchings)),"num_edges_layer":len(layer),
-                        "p0_B":float(pp[0]),"p1_B":float(pp[1])})
-            if t<args.steps: psi=dyn.step(psi,rr,t,False)
+        record = np.zeros((p.N,), dtype=np.int64)
+
+        # step 0: initial state, no update has happened
+        pp=z_probs_site(psi,p.N,B)
+        w.writerow({"step":0,"layer_idx":-1,"num_edges_layer":0,
+                    "p0_B":float(pp[0]),"p1_B":float(pp[1]),
+                    "jumps_step":0,"jumps_cum":0,"jump_rate_step":0.0})
+
+        for t in range(args.steps):
+            before = int(record.sum())
+            psi = dyn.step(psi, rr, t, False, record)
+            after = int(record.sum())
+            jumps = after - before
+            pp = z_probs_site(psi, p.N, B)
+            layer = matchings[t % len(matchings)]
+            w.writerow({"step":t+1,"layer_idx":int(t % len(matchings)),"num_edges_layer":len(layer),
+                        "p0_B":float(pp[0]),"p1_B":float(pp[1]),
+                        "jumps_step":int(jumps),"jumps_cum":int(after),"jump_rate_step":float(jumps)/float(p.N)})
+
+        jump_total = int(record.sum())
+        if args.steps > 0 and p.N > 0:
+            jump_rate_per_qubit_step = float(jump_total) / float(args.steps * p.N)
 
     # figures (run-local)
     fig_nosignal(figs_dir/"nosignal-tvd-vs-t.pdf",nos,dist_AB)
     fig_cone(figs_dir/"cone-heatmap.pdf",infl)
-    fig_sched(figs_dir/"scheduling-variance.pdf",sched_good,"Scheduling robustness (diszjunkt élek permutációja)")
+    fig_sched(figs_dir/"scheduling-variance.pdf",sched_good,"Scheduling invariance check (diszjunkt élek permutációja)")
     fig_nc_tvd(figs_dir/"fig-nc-nonlocal-raw.pdf",nc1,"NC1: non-local nyers lépés (proxy)")
     fig_nc_tvd(figs_dir/"fig-nc-nonlocal-filter.pdf",nc2,"NC2: non-local szűrés (proxy)")
     fig_sched(figs_dir/"fig-nc-scheduling.pdf",sched_bad,"NC3: schedule dependence (non-confluent updates)")
@@ -745,9 +792,13 @@ def run_one(topology, args, publish, run_prefix):
             "nc1":{"max_tvd": float(max([r["tvd"] for r in nc1])) if nc1 else 0.0, "expected_violation": True},
             "nc2":{"max_tvd": float(max([r["tvd"] for r in nc2])) if nc2 else 0.0, "expected_violation": True},
             "nc4":{"tvd_uncond": float(nc4["tvd_uncond"]), "tvd_cond": float(nc4["tvd_cond"])},
+            "jump_record":{"total_jumps": int(jump_total), "jump_rate_per_qubit_step": float(jump_rate_per_qubit_step)},
         },
         "overall_pass": bool((max_tvd_outside<=eps_ns) and (max_sched_good<=eps_sched)),
-        "notes":["General-graph reference instantiation; strict cone speed=1 per matching-layer step."]
+        "notes":[
+            "General-graph reference instantiation.",
+            "Hard-local (radius-1 per step) dynamics: the cone behavior is by construction and used as a sanity-check, not as a Lieb-Robinson-type theorem."
+        ]
     }
     write_json(out_dir/"summary.json", summary)
 
