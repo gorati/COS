@@ -90,5 +90,3 @@ repository:
 
 - `Pantheon+SH0ES.dat`
 - `Pantheon+SH0ES_STAT+SYS.cov`
-
-See `docs/DATA_AVAILABILITY.md`.
