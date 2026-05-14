@@ -4,11 +4,11 @@
 COS-CNS FAST GRAPH pipeline (English) (multi-topology, COS-NUM/COS-STAB outputs, with progress display)
 
 Main features:
-- chain / star / Erdos-Renyi (összefüggő) topológián futtatható referencia instanciálás
-- no-signaling (TVD), hard-local cone sanity-check (távolság-sáv heatmap), scheduling (confluent vs nonconfluent), NC1–NC4
+- runnable reference instantiation on chain / star / Erdos-Renyi (connected) topologies
+- no-signaling (TVD), hard-local cone sanity-check (distance-band heatmap), scheduling (confluent vs nonconfluent), NC1–NC4
 - COS-NUM: runs/<run_id>/config.json + outputs/*.csv/*.npz + outputs/summary.json
 - COS-STAB: logs/timeseries.csv
-- LaTeX kanonikus ábrák: csak a publish_topology-hoz másolódnak ki (figs/*.pdf + fig-nc-*.pdf)
+- canonical LaTeX figures: copied out only for publish_topology (figs/*.pdf + fig-nc-*.pdf)
 
 Note: this script does not rely on Python's hash() for seeds, so PYTHONHASHSEED is not required for reproducibility.
 
@@ -63,7 +63,7 @@ sqrtSWAP = np.array([[1,0,0,0],
                      [0,(1-1j)/2,(1+1j)/2,0],
                      [0,0,0,1]], dtype=complex)
 
-# Hadamard (NC4-hez: superpozíció)
+# Hadamard (for NC4: superposition)
 H = (1/np.sqrt(2))*np.array([[1,1],[1,-1]], dtype=complex)
 # ---------- Progress ----------
 def _fmt_seconds(sec: float) -> str:
@@ -264,8 +264,8 @@ def init_state_zero(N):
 
 
 def init_state_superposition(N):
-    """|+...+> inicializálás: Hadamard minden qubitre.
-    Scheduling/NC3 esetén ez tipikusan nemtriviális Z-metrikát ad.
+    """|+...+> initialization: apply Hadamard to every qubit.
+    For scheduling/NC3, this typically gives a non-trivial Z metric.
     """
     psi = init_state_zero(N)
     for q in range(N):
@@ -295,7 +295,7 @@ class GraphDynamics:
     def step(self, psi, rng, t, permute_within, record=None):
         M=self.matchings[t%self.L].copy()
         if permute_within:
-            M = list(reversed(M))  # determinisztikus permutáció; nem fogyaszt RNG-t
+            M = list(reversed(M))  # deterministic permutation; does not consume RNG
         for u,v in M:
             a,b=(u,v) if u<v else (v,u)
             psi=apply_2q_gate(psi,self.edge_gate,self.p.N,a,b)
@@ -422,16 +422,16 @@ def exp_cone(dyn,p,steps,ntraj,center,distC, prog: SimpleProgress|None):
 
 def exp_sched(dyn, p, steps, trials, ntraj, B, mode, prog: Optional[SimpleProgress]):
     """
-    Scheduling benchmark / NC3 alap:
+    Scheduling benchmark / NC3 basis:
     - reference: fix (permute_within=False)
     - variant:
-        mode == "confluent"    -> permute_within=True (csak diszjunkt éleken belüli permutáció)
-        mode == "nonconfluent" -> step_nonconfluent (átfedő élek véletlen sorrendben)
+        mode == "confluent"    -> permute_within=True (permutation only within disjoint edges)
+        mode == "nonconfluent" -> step_nonconfluent (overlapping edges in random order)
 
-    Zajcsökkentés: minden trajektóriára közös véletlenforrást használunk (rng és rng2 azonos állapotból),
-    így a konfluens esetben a különbség ideally 0 (numerikus kerekítésen belül).
+    Variance reduction: use a shared random source for every trajectory (rng and rng2 from the same state),
+    so in the confluent case the difference is ideally 0 (up to numerical round-off).
     """
-    psi0 = init_state_superposition(p.N)  # nemtriviális kezdőállapot Bob Z-TVD-hez
+    psi0 = init_state_superposition(p.N)  # non-trivial initial state for Bob's Z-TVD
     rows = []
     pref_list = []
     for i in range(trials):
@@ -495,19 +495,19 @@ def exp_nc_nonlocal(dyn,p,steps,ntraj,A,B, prog: SimpleProgress|None):
 
 def exp_nc_postselection(dyn, p, steps, ntraj, A, B, prog: Optional[SimpleProgress]):
     """
-    NC4 (post-selection) – garantált conditional eltérés Bob Z-mérésében.
+    NC4 (post-selection) – guaranteed conditional deviation in Bob's Z measurement.
 
-    Konstrukció (kanonikus):
-      1) Választunk egy *szomszédos* (u,v) élt a gráfból (NC4_A=u, NC4_B=v).
-      2) Bell-pár előállítása: |00> --H_u--> (|0>+|1>)/sqrt2 ⊗ |0> --CNOT_{u->v}--> |Φ+>.
-      3) A = u Z-mérése:
-         - Unconditional: Bob Z eloszlása maximálisan kevert (≈ [0.5, 0.5]) függetlenül attól, hogy mérünk-e A-n.
-         - Conditional: Bob Z eloszlása A kimenetére kondicionálva élesen szétválik (≈ [1,0] vs [0,1]),
-           ezért a conditional TVD ≈ 1.
+    Construction (canonical):
+      1) Choose an *adjacent* (u,v) edge from the graph (NC4_A=u, NC4_B=v).
+      2) Bell-pair preparation: |00> --H_u--> (|0>+|1>)/sqrt2 ⊗ |0> --CNOT_{u->v}--> |Φ+>.
+      3) A = u Z measurement:
+         - Unconditional: Bob's Z distribution is maximally mixed (≈ [0.5, 0.5]) regardless of whether A is measured.
+         - Conditional: Bob's Z distribution, conditioned on A's outcome, separates sharply (≈ [1,0] vs [0,1]),
+           therefore the conditional TVD is ≈ 1.
 
-    Megjegyzés:
-      - Ez a negatív kontroll *koncepcionális* és topológiától független, ezért a fődinamikától (dyn.step)
-        itt nem függünk. Cél: a conditional vs unconditional különbség operacionális demonstrációja.
+    Note:
+      - This negative control is *conceptual* and topology-independent, so it does not depend on the main dynamics
+        (dyn.step) here. Goal: operational demonstration of the conditional vs unconditional difference.
     """
     # Pick an adjacent edge for guaranteed correlation
     if not hasattr(dyn, "edges") or not dyn.edges:
@@ -583,14 +583,14 @@ def exp_nc_postselection(dyn, p, steps, ntraj, A, B, prog: Optional[SimpleProgre
 
 def fig_nosignal(outpath, rows, dist_AB: int):
     """
-    No-signaling ábra: TVD(t) Bob Z-mérésén.
-    dist_AB csak tájékoztató (graph distance).
+    No-signaling figure: TVD(t) for Bob's Z measurement.
+    dist_AB is informational only (graph distance).
     """
     import numpy as np
     t = np.array([r["t"] for r in rows], dtype=int)
     tv = np.array([r["tvd"] for r in rows], dtype=float)
     plt.figure(figsize=(7,5))
-    plt.plot(t, tv, "o-", label=r"$D_{\mathrm{TV}}(p_B^0,p_B^1)$ (Z-mérés)")
+    plt.plot(t, tv, "o-", label=r"$D_{\mathrm{TV}}(p_B^0,p_B^1)$ (Z measurement)")
     if dist_AB is not None and dist_AB >= 0:
         plt.axvline(dist_AB, linestyle="--", color="black", label=f"graph distance d={dist_AB}")
         plt.axvspan(0, dist_AB, alpha=0.12, label="outside the hard-local cone (baseline; ideally ~0)")
@@ -673,7 +673,7 @@ def run_one(topology, args, publish, run_prefix):
 
     prog = SimpleProgress(args.trials*max(200,args.ntraj//6), prefix=f"[{topology}] sched(confluent)", enabled=not args.no_progress, min_interval=args.progress_interval)
 
-    # Scheduling/NC3 paraméterek (alapértelmezés)
+    # Scheduling/NC3 parameters (defaults)
     steps_sched = min(6, args.steps)
     B_sched = B
     autotune_info = None
@@ -693,7 +693,7 @@ def run_one(topology, args, publish, run_prefix):
         if autotune_info is not None:
             B_sched = int(autotune_info["B_sched"])
             steps_sched = int(autotune_info["steps_sched"])
-    # Felülírások (ha megadod, ezek felülírják a default/autotune választást)
+    # Overrides (if provided, these override the default/autotune selection)
     if args.sched_steps is not None and args.sched_steps > 0:
         steps_sched = min(int(args.sched_steps), int(args.steps))
     if args.sched_B is not None and args.sched_B >= 0:
@@ -771,9 +771,9 @@ def run_one(topology, args, publish, run_prefix):
     # figures (run-local)
     fig_nosignal(figs_dir/"nosignal-tvd-vs-t.pdf",nos,dist_AB)
     fig_cone(figs_dir/"cone-heatmap.pdf",infl)
-    fig_sched(figs_dir/"scheduling-variance.pdf",sched_good,"Scheduling invariance check (diszjunkt élek permutációja)")
-    fig_nc_tvd(figs_dir/"fig-nc-nonlocal-raw.pdf",nc1,"NC1: non-local nyers lépés (proxy)")
-    fig_nc_tvd(figs_dir/"fig-nc-nonlocal-filter.pdf",nc2,"NC2: non-local szűrés (proxy)")
+    fig_sched(figs_dir/"scheduling-variance.pdf",sched_good,"Scheduling invariance check (permutation of disjoint edges)")
+    fig_nc_tvd(figs_dir/"fig-nc-nonlocal-raw.pdf",nc1,"NC1: non-local raw step (proxy)")
+    fig_nc_tvd(figs_dir/"fig-nc-nonlocal-filter.pdf",nc2,"NC2: non-local filtering (proxy)")
     fig_sched(figs_dir/"fig-nc-scheduling.pdf",sched_bad,"NC3: schedule dependence (non-confluent updates)")
     fig_nc4(figs_dir/"fig-nc-postselection.pdf",nc4)
 
@@ -828,16 +828,16 @@ def _parse_int_list(s: str):
 
 def autotune_nc3(dyn, p, max_steps: int, B_candidates, steps_candidates, trials: int, ntraj: int, eps_sched: float, tau: float):
     """
-    Gyors paraméter-keresés NC3/scheduling informatívvá tételéhez.
+    Fast parameter search to make NC3/scheduling informative.
 
-    Cél:
+    Goal:
       - confluent: max_tvd_good <= eps_sched
       - nonconfluent: max_tvd_bad >= tau
 
     Score: (max_good - eps)+ + (tau - max_bad)+
-    Tie-break: kisebb steps.
+    Tie-break: smaller steps.
 
-    A keresést steps szerint növekvően végezzük, és ha score==0, azonnal megállunk.
+    The search proceeds in increasing order of steps and stops immediately if score==0.
     """
     steps_candidates = sorted(set(int(s) for s in steps_candidates if 1 <= int(s) <= max_steps))
     B_candidates = [int(b) for b in B_candidates]
@@ -890,13 +890,13 @@ def main():
     ap.add_argument("--p",type=float,default=0.4)
     ap.add_argument("--eps_ns",type=float,default=1e-3)
     ap.add_argument("--eps_sched",type=float,default=1e-3)
-    ap.add_argument("--autotune_nc3", action="store_true", help="NC3/scheduling paraméterek keresése (B és steps) a publish topológiára")
-    ap.add_argument("--autotune_steps", default="2,3,4,5,6,8,10,12,16,20", help="steps jelöltek (vesszővel) NC3 kereséshez")
-    ap.add_argument("--autotune_trials", type=int, default=20, help="autotune trials (gyors keresés)")
-    ap.add_argument("--autotune_ntraj", type=int, default=300, help="autotune ntraj (gyors keresés)")
+    ap.add_argument("--autotune_nc3", action="store_true", help="Search NC3/scheduling parameters (B and steps) for the publish topology")
+    ap.add_argument("--autotune_steps", default="2,3,4,5,6,8,10,12,16,20", help="Candidate steps (comma-separated) for the NC3 search")
+    ap.add_argument("--autotune_trials", type=int, default=20, help="autotune trials (fast search)")
+    ap.add_argument("--autotune_ntraj", type=int, default=300, help="autotune ntraj (fast search)")
     ap.add_argument("--autotune_tau", type=float, default=0.05, help="minimum expected non-confluent deviation (TVD) for NC3")
-    ap.add_argument("--sched_steps", type=int, default=-1, help="Fix scheduling number of steps (NC3) az autotune felülírására; -1: default/autotune")
-    ap.add_argument("--sched_B", type=int, default=-1, help="Fix B csúcs scheduling/NC3 méréshez az autotune felülírására; -1: default/autotune")
+    ap.add_argument("--sched_steps", type=int, default=-1, help="Fixed scheduling number of steps (NC3) to override autotune; -1: default/autotune")
+    ap.add_argument("--sched_B", type=int, default=-1, help="Fixed B node for scheduling/NC3 measurement to override autotune; -1: default/autotune")
     ap.add_argument("--no_progress", action="store_true", help="Disable progress display")
     ap.add_argument("--progress_interval", type=float, default=0.2, help="Minimum progress refresh interval (s)")
     args=ap.parse_args()
